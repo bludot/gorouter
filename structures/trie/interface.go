@@ -1,10 +1,8 @@
 package trie
 
-import "github.com/bludot/gorouter/controller"
-
 type ITrie interface {
-	Insert(key string, controller controller.IController)
-	Search(key string) (controller.IController, bool)
+	Insert(key string, value interface{})
+	Search(key string) (interface{}, bool)
 	/*Keys() []string
 	Values() []interface{}
 	PrefixSearch(key string) []string

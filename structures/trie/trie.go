@@ -1,14 +1,14 @@
 package trie
 
 import (
-	"github.com/bludot/gorouter/controller"
+	"log"
 	"strings"
 )
 
 type Node struct {
-	children   map[string]*Node
-	isWord     bool
-	controller controller.IController
+	Children map[string]*Node
+	isWord   bool
+	value    interface{}
 }
 
 type Trie struct {
@@ -18,32 +18,32 @@ type Trie struct {
 func NewTrie() ITrie {
 	return &Trie{
 		Root: &Node{
-			children: make(map[string]*Node),
+			Children: make(map[string]*Node),
 		},
 	}
 }
 
-func NewNode(controller controller.IController) *Node {
+func NewNode(value interface{}, params *[]string) *Node {
 	return &Node{
-		children:   make(map[string]*Node),
-		controller: controller,
+		Children: make(map[string]*Node),
+		value:    value,
 	}
 }
 
-func (t *Trie) Insert(key string, controller controller.IController) {
+func (t *Trie) Insert(key string, value interface{}) {
 	node := t.Root
+
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
-		child, _ := node.children[part]
+		child, _ := node.Children[part]
 		if child == nil {
-			if node.children == nil {
-				node.children = map[string]*Node{}
+			if node.Children == nil {
+				node.Children = map[string]*Node{}
 			}
-			child = NewNode(controller)
-			node.children[part] = child
+			child = NewNode(value, nil)
+			node.Children[part] = child
 		}
 		node = child
 	}
-
 }
 
 func PathSegmenter(path string, start int) (segment string, next int) {
@@ -57,22 +57,25 @@ func PathSegmenter(path string, start int) (segment string, next int) {
 	return path[start : start+end+1], start + end + 1
 }
 
-func (t *Trie) Search(key string) (controller.IController, bool) {
+func (t *Trie) Search(key string) (*interface{}, bool) {
 	node := t.Root
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
-		child, _ := node.children[part]
+		log.Println(part)
+		child, _ := node.Children[part]
+		lookforwardPart, j := PathSegmenter(key, i)
+		log.Println("forward", lookforwardPart, j)
 		if child == nil {
 			return nil, false
 		}
 		node = child
 	}
-	return node.controller, true
+	return &node.value, true
 }
 
 func (t *Trie) Delete(key string) {
 	node := t.Root
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
-		child, _ := node.children[part]
+		child, _ := node.Children[part]
 		if child == nil {
 			return
 		}

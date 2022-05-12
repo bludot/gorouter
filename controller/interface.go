@@ -1,5 +1,5 @@
 package controller
 
 type IController interface {
-	Run(params []string)
+	Run(params map[string]string) (string, error)
 }

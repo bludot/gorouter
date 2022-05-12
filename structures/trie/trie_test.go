@@ -3,6 +3,7 @@ package trie_test
 import (
 	"github.com/bludot/gorouter/controller"
 	"github.com/bludot/gorouter/structures/trie"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
 )
@@ -43,13 +44,32 @@ func NewRootController() controller.IController {
 
 func TestTrie(t *testing.T) {
 
+	a := assert.New(t)
 	node := trie.NewTrie()
-	node.Insert("/", NewRootController())
-	node.Insert("/a", NewAController())
+	node.Insert("/", "tset")
+	node.Insert("/a", "tset2")
+	node.Insert("/b", "test3")
+	node.Insert("/a/b", "test4")
+	node.Insert("/a/b/c", "test5")
+	node.Insert("/a/b/$test/$test2", "test6")
+	node.Insert("/a/b/d/$test2", "test7")
 	log.Println(node.Search("/a"))
-	control, _ := node.Search("/a")
-	control.Run([]string{"tset"})
+	val, _ := node.Search("/a")
+	a.Equal("tset2", val)
 
-	control, _ = node.Search("/")
-	control.Run([]string{"tset2"})
+	val, _ = node.Search("/a/b")
+	a.Equal("test4", val)
+
+	val, _ = node.Search("/a/b/c")
+	a.Equal("test5", val)
+
+	val, _ = node.Search("/a/b/$test/$test2")
+	a.Equal("test6", val)
+
+	val, _ = node.Search("/a/b/d/$test2")
+	a.Equal("test7", val)
+
+	val, _ = node.Search("/a/b/d/$test2")
+	a.Equal("test7", val)
+
 }
