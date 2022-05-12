@@ -8,7 +8,7 @@ import (
 type Node struct {
 	Children map[string]*Node
 	isWord   bool
-	value    interface{}
+	Value    interface{}
 }
 
 type Trie struct {
@@ -26,7 +26,7 @@ func NewTrie() ITrie {
 func NewNode(value interface{}, params *[]string) *Node {
 	return &Node{
 		Children: make(map[string]*Node),
-		value:    value,
+		Value:    value,
 	}
 }
 
@@ -57,7 +57,7 @@ func PathSegmenter(path string, start int) (segment string, next int) {
 	return path[start : start+end+1], start + end + 1
 }
 
-func (t *Trie) Search(key string) (*interface{}, bool) {
+func (t *Trie) Search(key string) (*Node, bool) {
 	node := t.Root
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
 		log.Println(part)
@@ -69,7 +69,7 @@ func (t *Trie) Search(key string) (*interface{}, bool) {
 		}
 		node = child
 	}
-	return &node.value, true
+	return node, true
 }
 
 func (t *Trie) Delete(key string) {

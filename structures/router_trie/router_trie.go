@@ -1,8 +1,15 @@
 package router_trie
 
 import (
-	"github.com/bludot/gorouter/controller"
+	"errors"
 	"strings"
+
+	"github.com/bludot/gorouter/controller"
+	"github.com/bludot/gorouter/router/entities"
+)
+
+var (
+	NotFoundError = errors.New("Not found")
 )
 
 type Node struct {
@@ -70,15 +77,18 @@ func PathSegmenter(path string, start int) (segment string, next int) {
 	return path[start : start+end+1], start + end + 1
 }
 
-func (t *RouterTrie) GetController(key string) (controller *controller.IController, params *map[string]string, found bool) {
+func (t *RouterTrie) GetController(key string) (controller *controller.IController, params *entities.RouteParams, err error) {
 	foundNode, params, found := t.Search(key)
-
-	return foundNode.value, params, found
+	var thisError error
+	if !found {
+		thisError = NotFoundError
+	}
+	return foundNode.value, params, thisError
 }
 
-func (t *RouterTrie) Search(key string) (*Node, *map[string]string, bool) {
+func (t *RouterTrie) Search(key string) (*Node, *entities.RouteParams, bool) {
 	node := t.Root
-	params := make(map[string]string)
+	params := make(entities.RouteParams)
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
 		child, _ := node.children[part]
 		skip := 0
@@ -87,14 +97,19 @@ func (t *RouterTrie) Search(key string) (*Node, *map[string]string, bool) {
 		}
 		if child.params != nil {
 			var newPart string
-			for j, param := range *child.params {
-				newPart, _ = PathSegmenter(key, i+j)
-				params[param] = newPart
-				skip = j
+			end := i
+			for _, param := range *child.params {
+				newPart, end = PathSegmenter(key, end)
+				if end == -1 {
+					params[param] = newPart[1:]
+				} else {
+					params[param] = newPart[1:]
+					skip = end
+				}
 			}
 			// split string by '/'
-			split := strings.Split(key, "/")
-			if len(split[i+skip:]) == 0 {
+			newPart, end = PathSegmenter(key, skip)
+			if end == -1 {
 				node = child
 				return node, &params, true
 			}

@@ -1,21 +1,24 @@
 package router_trie_test
 
 import (
-	"github.com/bludot/gorouter/controller"
-	"github.com/bludot/gorouter/structures/router_trie"
-
+	"context"
 	"log"
 	"testing"
+
+	"github.com/bludot/gorouter/controller"
+	"github.com/bludot/gorouter/router/entities"
+	"github.com/bludot/gorouter/structures/router_trie"
+	"github.com/stretchr/testify/assert"
 )
 
 type AController struct {
 	controller.Controller
 }
 
-func (c *AController) Run(params map[string]string) (string, error) {
+func (c *AController) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
-	return "", nil
+	return nil
 }
 
 func NewAController() controller.IController {
@@ -31,10 +34,10 @@ type RootController struct {
 	controller.Controller
 }
 
-func (c *RootController) Run(params map[string]string) (string, error) {
+func (c *RootController) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
-	return "", nil
+	return nil
 }
 
 func NewRootController() controller.IController {
@@ -47,6 +50,7 @@ func NewRootController() controller.IController {
 }
 
 func TestRouterTrie(t *testing.T) {
+	a := assert.New(t)
 
 	node := router_trie.NewRouteTrie()
 	node.Insert("/", NewRootController())
@@ -56,17 +60,19 @@ func TestRouterTrie(t *testing.T) {
 	node.Insert("/a/b/c", NewRootController())
 	node.Insert("/a/b/$test/$test2", NewRootController())
 	node.Insert("/a/b/d/$test2", NewRootController())
-	log.Println(node.GetController("/a"))
-	control, _, _ := node.GetController("/a")
-	(*control).Run(map[string]string{})
+	control, params, err := node.GetController("/a")
+	a.NotNil(control)
+	a.Equal(len(*params), 0)
+	a.NoError(err)
 
-	control, _, _ = node.GetController("/")
-	(*control).Run(map[string]string{})
+	control, params, err = node.GetController("/")
+	a.NotNil(control)
+	a.Equal(len(*params), 0)
+	a.NoError(err)
 
-	control, params, exists := node.GetController("/a/b/123/123")
-	if exists {
-		log.Println(params)
-		(*control).Run(*params)
-	}
+	control, params, err = node.GetController("/a/b/123/1234")
+	a.NotNil(control)
+	a.Equal(len(*params), 2)
+	a.NoError(err)
 
 }
