@@ -82,6 +82,7 @@ func (t *RouterTrie) GetController(key string) (controller *controller.IControll
 	var thisError error
 	if !found {
 		thisError = NotFoundError
+		return nil, params, thisError
 	}
 	return foundNode.value, params, thisError
 }
@@ -109,8 +110,8 @@ func (t *RouterTrie) Search(key string) (*Node, *entities.RouteParams, bool) {
 			}
 			// split string by '/'
 			newPart, end = PathSegmenter(key, skip)
+			node = child
 			if end == -1 {
-				node = child
 				return node, &params, true
 			}
 

@@ -2,6 +2,8 @@ package router
 
 import (
 	"context"
+	"log"
+	"net/http"
 	"strings"
 
 	"github.com/bludot/gorouter/controller"
@@ -56,8 +58,20 @@ func (r *RouterService) Process(ctx context.Context, path string) error {
 		queryParams = r.ParseQueryParams(route[1])
 	}
 	controller, params, err := r.Trie.GetController(route[0])
-	if err != nil {
+	if err == nil {
+
+		log.Println("error is not nil", err)
 		return (*controller).Run(ctx, params, queryParams)
 	}
 	return err
+}
+
+func (r *RouterService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	path := req.URL.Path
+	log.Println("Request: ", path)
+	err := r.Process(context.Background(), path)
+	if err != nil {
+		log.Println("Error: ", err)
+	}
+	w.Write([]byte("Hello World"))
 }
