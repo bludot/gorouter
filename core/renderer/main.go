@@ -26,6 +26,21 @@ func (r *Render) Render(templateName string, data interface{}) (*http_handler.HT
 	return r.Response, err
 }
 
+func (r *Render) ToJSON(data interface{}) (*http_handler.HTTPResponse, error) {
+	jsonString, err := r.transformer.ToJson(data)
+	if err != nil {
+		return nil, err
+	}
+	r.Response = &http_handler.HTTPResponse{
+		Header: map[string][]string{
+			"Content-Type": {"application/json"},
+		},
+		Body: []byte(jsonString),
+	}
+	return r.Response, nil
+
+}
+
 func (r *Render) SetTemplateEngine(templateEngine template.TemplateEngine) *Render {
 	r.templateEngine = templateEngine
 	return r
