@@ -2,9 +2,8 @@ package router
 
 import (
 	"context"
+	"github.com/bludot/gorouter/core/router/entities"
 	"net/http"
-
-	"github.com/bludot/gorouter/router/entities"
 )
 
 type Router interface {

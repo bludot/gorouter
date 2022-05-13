@@ -1,10 +1,10 @@
 package trie_test
 
 import (
+	"github.com/bludot/gorouter/core/structures/trie"
 	"log"
 	"testing"
 
-	"github.com/bludot/gorouter/structures/trie"
 	"github.com/stretchr/testify/assert"
 )
 

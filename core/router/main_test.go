@@ -2,12 +2,12 @@ package router_test
 
 import (
 	"context"
+	controller2 "github.com/bludot/gorouter/core/controller"
+	"github.com/bludot/gorouter/core/router"
+	"github.com/bludot/gorouter/core/router/entities"
 	"log"
 	"testing"
 
-	"github.com/bludot/gorouter/controller"
-	router "github.com/bludot/gorouter/router"
-	"github.com/bludot/gorouter/router/entities"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,17 +21,17 @@ func TestNewRouter(t *testing.T) {
 }
 
 type RootController struct {
-	controller.Controller
+	controller2.Controller
 }
 
-func (c *RootController) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
 
-func NewRootController() controller.IController {
-	thisController := &controller.Controller{
+func NewRootController() controller2.IController {
+	thisController := &controller2.Controller{
 		Name: "RootController",
 	}
 	return &RootController{
@@ -77,6 +77,37 @@ func TestRouterService_Process(t *testing.T) {
 		})
 
 		err := routerService.Process(context.TODO(), "/?test=test")
+
+		a.NoError(err)
+
+	})
+	t.Run("should process a sub route", func(t *testing.T) {
+		a := assert.New(t)
+
+		routerService := router.NewRouter()
+
+		routerService.AddRoute(router.Route{
+			Controller: NewRootController(),
+			Path:       "/test",
+		})
+
+		err := routerService.Process(context.TODO(), "/test")
+
+		a.NoError(err)
+
+	})
+
+	t.Run("should process a sub route with params", func(t *testing.T) {
+		a := assert.New(t)
+
+		routerService := router.NewRouter()
+
+		routerService.AddRoute(router.Route{
+			Controller: NewRootController(),
+			Path:       "/test/$test",
+		})
+
+		err := routerService.Process(context.TODO(), "/test/123")
 
 		a.NoError(err)
 

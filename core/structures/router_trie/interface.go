@@ -1,8 +1,8 @@
 package router_trie
 
 import (
-	"github.com/bludot/gorouter/controller"
-	"github.com/bludot/gorouter/router/entities"
+	"github.com/bludot/gorouter/core/controller"
+	"github.com/bludot/gorouter/core/router/entities"
 )
 
 type IRouterTrie interface {

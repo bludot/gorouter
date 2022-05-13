@@ -2,13 +2,13 @@ package router
 
 import (
 	"context"
+	"github.com/bludot/gorouter/core/controller"
+	"github.com/bludot/gorouter/core/renderer"
+	"github.com/bludot/gorouter/core/router/entities"
+	router_trie2 "github.com/bludot/gorouter/core/structures/router_trie"
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/bludot/gorouter/controller"
-	"github.com/bludot/gorouter/router/entities"
-	"github.com/bludot/gorouter/structures/router_trie"
 )
 
 type Route struct {
@@ -19,11 +19,11 @@ type Route struct {
 type RouterService struct {
 	routes []Route
 	cached map[string]*Route
-	Trie   router_trie.IRouterTrie
+	Trie   router_trie2.IRouterTrie
 }
 
 func NewRouter() Router {
-	newTrie := router_trie.NewRouteTrie()
+	newTrie := router_trie2.NewRouteTrie()
 	return &RouterService{
 		routes: make([]Route, 0),
 		cached: make(map[string]*Route),
@@ -59,10 +59,10 @@ func (r *RouterService) Process(ctx context.Context, path string) error {
 	}
 	controller, params, err := r.Trie.GetController(route[0])
 	if err == nil {
-
-		log.Println("error is not nil", err)
-		return (*controller).Run(ctx, params, queryParams)
+		log.Println("error is nil", err)
+		return (*controller).Handle(ctx, params, queryParams)
 	}
+	log.Println("error is not nil", err)
 	return err
 }
 
@@ -73,5 +73,5 @@ func (r *RouterService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println("Error: ", err)
 	}
-	w.Write([]byte("Hello World"))
+	renderer.GetRender().Respond(w, req)
 }

@@ -2,16 +2,15 @@ package controller
 
 import (
 	"context"
+	"github.com/bludot/gorouter/core/router/entities"
 	"log"
-
-	"github.com/bludot/gorouter/router/entities"
 )
 
 type Controller struct {
 	Name string `json:"name"`
 }
 
-func (c *Controller) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *Controller) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
 	return nil

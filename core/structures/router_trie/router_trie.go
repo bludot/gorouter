@@ -2,10 +2,10 @@ package router_trie
 
 import (
 	"errors"
+	"github.com/bludot/gorouter/core/controller"
+	"github.com/bludot/gorouter/core/router/entities"
+	"log"
 	"strings"
-
-	"github.com/bludot/gorouter/controller"
-	"github.com/bludot/gorouter/router/entities"
 )
 
 var (
@@ -78,6 +78,7 @@ func PathSegmenter(path string, start int) (segment string, next int) {
 }
 
 func (t *RouterTrie) GetController(key string) (controller *controller.IController, params *entities.RouteParams, err error) {
+	log.Println("GetController", key)
 	foundNode, params, found := t.Search(key)
 	var thisError error
 	if !found {
@@ -99,20 +100,27 @@ func (t *RouterTrie) Search(key string) (*Node, *entities.RouteParams, bool) {
 		if child.params != nil {
 			var newPart string
 			end := i
-			for _, param := range *child.params {
-				newPart, end = PathSegmenter(key, end)
-				if end == -1 {
-					params[param] = newPart[1:]
-				} else {
-					params[param] = newPart[1:]
-					skip = end
+			newPart, _ = PathSegmenter(key, end)
+
+			if child.children[newPart] == nil && end != -1 {
+
+				for _, param := range *child.params {
+					newPart, end = PathSegmenter(key, end)
+					if end == -1 {
+						params[param] = newPart[1:]
+						skip += len(newPart)
+					} else {
+						params[param] = newPart[1:]
+						skip = end
+					}
 				}
-			}
-			// split string by '/'
-			newPart, end = PathSegmenter(key, skip)
-			node = child
-			if end == -1 {
-				return node, &params, true
+				// split string by '/'
+				newPart, end = PathSegmenter(key, skip)
+				node = child
+				if end == -1 {
+					return node, &params, true
+					// return node, &params, true
+				}
 			}
 
 		}

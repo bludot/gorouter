@@ -2,27 +2,27 @@ package router_trie_test
 
 import (
 	"context"
+	controller2 "github.com/bludot/gorouter/core/controller"
+	"github.com/bludot/gorouter/core/router/entities"
+	"github.com/bludot/gorouter/core/structures/router_trie"
 	"log"
 	"testing"
 
-	"github.com/bludot/gorouter/controller"
-	"github.com/bludot/gorouter/router/entities"
-	"github.com/bludot/gorouter/structures/router_trie"
 	"github.com/stretchr/testify/assert"
 )
 
 type AController struct {
-	controller.Controller
+	controller2.Controller
 }
 
-func (c *AController) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *AController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
 
-func NewAController() controller.IController {
-	thisController := &controller.Controller{
+func NewAController() controller2.IController {
+	thisController := &controller2.Controller{
 		Name: "AController",
 	}
 	return &AController{
@@ -31,17 +31,17 @@ func NewAController() controller.IController {
 }
 
 type RootController struct {
-	controller.Controller
+	controller2.Controller
 }
 
-func (c *RootController) Run(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
 	log.Println("Controller:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
 
-func NewRootController() controller.IController {
-	thisController := &controller.Controller{
+func NewRootController() controller2.IController {
+	thisController := &controller2.Controller{
 		Name: "RootController",
 	}
 	return &RootController{
@@ -62,17 +62,23 @@ func TestRouterTrie(t *testing.T) {
 	node.Insert("/a/b/d/$test2", NewRootController())
 	control, params, err := node.GetController("/a")
 	a.NotNil(control)
-	a.Equal(len(*params), 0)
+	a.Equal(0, len(*params))
 	a.NoError(err)
 
 	control, params, err = node.GetController("/")
 	a.NotNil(control)
-	a.Equal(len(*params), 0)
+	a.Equal(0, len(*params))
 	a.NoError(err)
 
 	control, params, err = node.GetController("/a/b/123/1234")
 	a.NotNil(control)
-	a.Equal(len(*params), 2)
+	a.Equal(2, len(*params))
+	a.NoError(err)
+
+	control, params, err = node.GetController("/a/b/d/123")
+	a.NotNil(control)
+	log.Println("Params:", params)
+	a.Equal(1, len(*params))
 	a.NoError(err)
 
 }
