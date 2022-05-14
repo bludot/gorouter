@@ -2,42 +2,37 @@ package router
 
 import (
 	"context"
-	"github.com/bludot/gorouter/core/controller"
+	"errors"
 	"github.com/bludot/gorouter/core/renderer"
 	"github.com/bludot/gorouter/core/router/entities"
-	router_trie2 "github.com/bludot/gorouter/core/structures/router_trie"
+	"github.com/bludot/gorouter/core/structures/router_trie"
 	"log"
 	"net/http"
 	"strings"
 )
 
-type Route struct {
-	Controller controller.IController
-	Path       string
-}
-
 type RouterService struct {
-	routes []Route
-	cached map[string]*Route
-	Trie   router_trie2.IRouterTrie
+	routes []entities.Route
+	cached map[string]*entities.Route
+	Trie   router_trie.IRouterTrie
 }
 
 func NewRouter() Router {
-	newTrie := router_trie2.NewRouteTrie()
+	newTrie := router_trie.NewRouteTrie()
 	return &RouterService{
-		routes: make([]Route, 0),
-		cached: make(map[string]*Route),
+		routes: make([]entities.Route, 0),
+		cached: make(map[string]*entities.Route),
 		Trie:   newTrie,
 	}
 }
 
-func (r *RouterService) AddRoute(route Route) {
+func (r *RouterService) AddRoute(route entities.Route) {
 	r.routes = append(r.routes, route)
 	r.cached[route.Path] = &route
-	r.Trie.Insert(route.Path, route.Controller)
+	r.Trie.Insert(route)
 }
 
-func (r *RouterService) GetRoutes() []Route {
+func (r *RouterService) GetRoutes() []entities.Route {
 	return r.routes
 }
 
@@ -51,25 +46,32 @@ func (r *RouterService) ParseQueryParams(path string) *entities.QueryParams {
 	return &queryParams
 }
 
-func (r *RouterService) Process(ctx context.Context, path string) error {
-	route := strings.Split(path, "?")
+func (r *RouterService) Process(ctx context.Context, req *http.Request, path string) error {
+
+	routePath := strings.Split(path, "?")
 	var queryParams *entities.QueryParams
-	if len(route) > 1 {
-		queryParams = r.ParseQueryParams(route[1])
+	if len(routePath) > 1 {
+		queryParams = r.ParseQueryParams(routePath[1])
 	}
-	controller, params, err := r.Trie.GetController(route[0])
-	if err == nil {
-		log.Println("error is nil", err)
-		return (*controller).Handle(ctx, params, queryParams)
+	route, params, err := r.Trie.GetController(routePath[0])
+	if err != nil {
+		log.Println("error is not nil", err)
+		return err
 	}
-	log.Println("error is not nil", err)
-	return err
+	if req.Method != route.Method {
+		renderer.GetRender().ToJSON(map[string]interface{}{"error": "Method not allowed"}, http.StatusInternalServerError)
+		return errors.New("method not allowed")
+	}
+
+	log.Println("error is nil", err)
+	return (*route).Handler(ctx, params, queryParams)
+
 }
 
 func (r *RouterService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	log.Println("Request: ", path)
-	err := r.Process(context.Background(), path)
+	err := r.Process(context.Background(), req, path)
 	if err != nil {
 		log.Println("Error: ", err)
 	}

@@ -2,7 +2,6 @@ package router_trie
 
 import (
 	"errors"
-	"github.com/bludot/gorouter/core/controller"
 	"github.com/bludot/gorouter/core/router/entities"
 	"log"
 	"strings"
@@ -15,14 +14,14 @@ var (
 type Node struct {
 	children map[string]*Node
 	isWord   bool
-	value    *controller.IController
+	value    *entities.Route
 	params   *[]string
 }
 
-func NewNode(controller controller.IController, params *[]string) *Node {
+func NewNode(route entities.Route, params *[]string) *Node {
 	return &Node{
 		children: make(map[string]*Node),
-		value:    &controller,
+		value:    &route,
 		params:   params,
 	}
 }
@@ -38,9 +37,9 @@ func NewRouteTrie() IRouterTrie {
 		},
 	}
 }
-func (t *RouterTrie) Insert(key string, controller controller.IController) {
+func (t *RouterTrie) Insert(route entities.Route) {
 	node := t.Root
-
+	key := route.Path
 	for part, i := PathSegmenter(key, 0); part != ""; part, i = PathSegmenter(key, i) {
 		if len(part) > 1 && part[1] == '$' {
 			params := node.params
@@ -57,7 +56,7 @@ func (t *RouterTrie) Insert(key string, controller controller.IController) {
 				if node.children == nil {
 					node.children = map[string]*Node{}
 				}
-				child = NewNode(controller, nil)
+				child = NewNode(route, nil)
 				node.children[part] = child
 			}
 			node = child
@@ -77,7 +76,7 @@ func PathSegmenter(path string, start int) (segment string, next int) {
 	return path[start : start+end+1], start + end + 1
 }
 
-func (t *RouterTrie) GetController(key string) (controller *controller.IController, params *entities.RouteParams, err error) {
+func (t *RouterTrie) GetController(key string) (route *entities.Route, params *entities.RouteParams, err error) {
 	log.Println("GetController", key)
 	foundNode, params, found := t.Search(key)
 	var thisError error

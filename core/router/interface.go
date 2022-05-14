@@ -7,9 +7,9 @@ import (
 )
 
 type Router interface {
-	AddRoute(route Route)
-	GetRoutes() []Route
+	AddRoute(route entities.Route)
+	GetRoutes() []entities.Route
 	ParseQueryParams(path string) *entities.QueryParams
-	Process(ctx context.Context, path string) error
+	Process(ctx context.Context, req *http.Request, path string) error
 	ServeHTTP(http.ResponseWriter, *http.Request)
 }

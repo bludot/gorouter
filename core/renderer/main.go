@@ -15,18 +15,20 @@ type Render struct {
 
 var renderer *Render
 
-func (r *Render) Render(templateName string, data interface{}) (*http_handler.HTTPResponse, error) {
+func (r *Render) Render(templateName string, data interface{}, statusCode int) (*http_handler.HTTPResponse, error) {
+
 	rawString, RenderType, err := r.templateEngine.Render(templateName, data)
 	r.Response = &http_handler.HTTPResponse{
 		Header: map[string][]string{
 			"Content-Type": {RenderType},
 		},
-		Body: []byte(rawString),
+		Body:       []byte(rawString),
+		StatusCode: statusCode,
 	}
 	return r.Response, err
 }
 
-func (r *Render) ToJSON(data interface{}) (*http_handler.HTTPResponse, error) {
+func (r *Render) ToJSON(data interface{}, statusCode int) (*http_handler.HTTPResponse, error) {
 	jsonString, err := r.transformer.ToJson(data)
 	if err != nil {
 		return nil, err
@@ -35,7 +37,8 @@ func (r *Render) ToJSON(data interface{}) (*http_handler.HTTPResponse, error) {
 		Header: map[string][]string{
 			"Content-Type": {"application/json"},
 		},
-		Body: []byte(jsonString),
+		Body:       []byte(jsonString),
+		StatusCode: statusCode,
 	}
 	return r.Response, nil
 
@@ -55,13 +58,18 @@ func (r *Render) Respond(w http.ResponseWriter, req *http.Request) {
 	if r.Response == nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error":"internal server error"}`))
+		w.Write(r.Response.Body)
 		return
 	}
 	for k, v := range r.Response.Header {
 		w.Header().Set(k, v[0])
 	}
+	w.WriteHeader(r.Response.StatusCode)
 	w.Write(r.Response.Body)
+}
+
+func (r *Render) Clear() {
+	r.Response = nil
 }
 
 func GetRender() *Render {

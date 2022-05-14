@@ -25,7 +25,7 @@ type RootController struct {
 }
 
 func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
-	log.Println("Controller:", c.Name)
+	log.Println("Handler:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
@@ -45,8 +45,8 @@ func TestRouterService_AddRoute(t *testing.T) {
 		routerService := router.NewRouter()
 
 		routerService.AddRoute(router.Route{
-			Controller: NewRootController(),
-			Path:       "/",
+			Handler: NewRootController(),
+			Path:    "/",
 		})
 	})
 }
@@ -57,8 +57,8 @@ func TestRouterService_Process(t *testing.T) {
 		routerService := router.NewRouter()
 
 		routerService.AddRoute(router.Route{
-			Controller: NewRootController(),
-			Path:       "/",
+			Handler: NewRootController(),
+			Path:    "/",
 		})
 
 		err := routerService.Process(context.TODO(), "/")
@@ -72,8 +72,8 @@ func TestRouterService_Process(t *testing.T) {
 		routerService := router.NewRouter()
 
 		routerService.AddRoute(router.Route{
-			Controller: NewRootController(),
-			Path:       "/",
+			Handler: NewRootController(),
+			Path:    "/",
 		})
 
 		err := routerService.Process(context.TODO(), "/?test=test")
@@ -87,8 +87,8 @@ func TestRouterService_Process(t *testing.T) {
 		routerService := router.NewRouter()
 
 		routerService.AddRoute(router.Route{
-			Controller: NewRootController(),
-			Path:       "/test",
+			Handler: NewRootController(),
+			Path:    "/test",
 		})
 
 		err := routerService.Process(context.TODO(), "/test")
@@ -103,8 +103,8 @@ func TestRouterService_Process(t *testing.T) {
 		routerService := router.NewRouter()
 
 		routerService.AddRoute(router.Route{
-			Controller: NewRootController(),
-			Path:       "/test/$test",
+			Handler: NewRootController(),
+			Path:    "/test/$test",
 		})
 
 		err := routerService.Process(context.TODO(), "/test/123")

@@ -6,6 +6,7 @@ import (
 	"github.com/bludot/gorouter/core/renderer"
 	"github.com/bludot/gorouter/core/router/entities"
 	"log"
+	"net/http"
 )
 
 type RootController struct {
@@ -13,13 +14,20 @@ type RootController struct {
 }
 
 func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
-	log.Println("Controller:", c.Name)
+	log.Println("Handler:", c.Name)
 	log.Println("Params:", params)
-	renderer.GetRender().ToJSON(map[string]string{"hello": "world"})
+	renderer.GetRender().ToJSON(map[string]string{"hello": "world"}, http.StatusOK)
 	return nil
 }
 
-func NewRootController() controller.IController {
+func (c *RootController) Root(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+	log.Println("Handler:", c.Name)
+	log.Println("Params:", params)
+	renderer.GetRender().ToJSON(map[string]string{"hello": "world"}, http.StatusOK)
+	return nil
+}
+
+func Controller() *RootController {
 	thisController := &controller.Controller{
 		Name: "RootController",
 	}

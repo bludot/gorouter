@@ -16,7 +16,7 @@ type AController struct {
 }
 
 func (c *AController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
-	log.Println("Controller:", c.Name)
+	log.Println("Handler:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
@@ -35,7 +35,7 @@ type RootController struct {
 }
 
 func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
-	log.Println("Controller:", c.Name)
+	log.Println("Handler:", c.Name)
 	log.Println("Params:", params)
 	return nil
 }
