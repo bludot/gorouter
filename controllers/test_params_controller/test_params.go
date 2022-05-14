@@ -17,7 +17,14 @@ func (c *TestParamsController) TestParams(ctx context.Context, params *entities.
 	log.Println("Handler:", c.Name)
 	log.Println("Params:", params)
 	renderer.GetRender().Render("index.html", map[string]string{
-		"body": "this is a test",
+		"body": "this is a test (POST)",
+	}, http.StatusOK)
+	return nil
+}
+
+func (c *TestParamsController) GetParams(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+	renderer.GetRender().Render("index.html", map[string]string{
+		"body": "this is a test (GET)",
 	}, http.StatusOK)
 	return nil
 }

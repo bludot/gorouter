@@ -29,10 +29,16 @@ func main() {
 		Method:  http.MethodGet,
 	})
 	mainRouter.AddRoute(entities.Route{
+		Handler: test_params_controller.NewTestParamsController().GetParams,
+		Path:    "/test/test",
+		Method:  http.MethodGet,
+	})
+	mainRouter.AddRoute(entities.Route{
 		Handler: test_params_controller.NewTestParamsController().TestParams,
 		Path:    "/test/test",
 		Method:  http.MethodPost,
 	})
+
 	http.Handle("/", mainRouter)
 	http.ListenAndServe(":8080", nil)
 }
