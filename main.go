@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/bludot/gorouter/controllers/root"
-	"github.com/bludot/gorouter/controllers/test"
-	"github.com/bludot/gorouter/controllers/test_params"
+	"github.com/bludot/gorouter/controllers/root_controller"
+	"github.com/bludot/gorouter/controllers/test_controller"
+	"github.com/bludot/gorouter/controllers/test_params_controller"
 	"github.com/bludot/gorouter/core/renderer"
 	"github.com/bludot/gorouter/core/router"
 	"github.com/bludot/gorouter/core/router/entities"
@@ -19,17 +19,17 @@ func main() {
 		SetTransformer(transformer.GetTransformer())
 	mainRouter := router.NewRouter()
 	mainRouter.AddRoute(entities.Route{
-		Handler: root.Controller().Root,
+		Handler: root_controller.Controller().Root,
 		Path:    "/",
 		Method:  http.MethodGet,
 	})
 	mainRouter.AddRoute(entities.Route{
-		Handler: test.NewTestController().TestRoute,
+		Handler: test_controller.NewTestController().TestRoute,
 		Path:    "/test/$id",
 		Method:  http.MethodGet,
 	})
 	mainRouter.AddRoute(entities.Route{
-		Handler: test_params.NewTestParamsController().TestParams,
+		Handler: test_params_controller.NewTestParamsController().TestParams,
 		Path:    "/test/test",
 		Method:  http.MethodPost,
 	})

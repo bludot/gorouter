@@ -1,4 +1,4 @@
-package test_params
+package test_params_controller
 
 import (
 	"context"
