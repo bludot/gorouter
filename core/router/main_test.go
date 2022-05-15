@@ -6,6 +6,8 @@ import (
 	"github.com/bludot/gorouter/core/router"
 	"github.com/bludot/gorouter/core/router/entities"
 	"log"
+	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,13 +26,13 @@ type RootController struct {
 	controller2.Controller
 }
 
-func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *RootController) Handle(ctx context.Context, r entities.HTTPRequest) error {
 	log.Println("Handler:", c.Name)
-	log.Println("Params:", params)
+	log.Println("Params:", r.Params)
 	return nil
 }
 
-func NewRootController() controller2.IController {
+func NewRootController() *RootController {
 	thisController := &controller2.Controller{
 		Name: "RootController",
 	}
@@ -44,9 +46,10 @@ func TestRouterService_AddRoute(t *testing.T) {
 	t.Run("should add a route", func(t *testing.T) {
 		routerService := router.NewRouter()
 
-		routerService.AddRoute(router.Route{
-			Handler: NewRootController(),
+		routerService.AddRoute(entities.Route{
+			Handler: NewRootController().Handle,
 			Path:    "/",
+			Method:  "GET",
 		})
 	})
 }
@@ -56,12 +59,29 @@ func TestRouterService_Process(t *testing.T) {
 		a := assert.New(t)
 		routerService := router.NewRouter()
 
-		routerService.AddRoute(router.Route{
-			Handler: NewRootController(),
+		routerService.AddRoute(entities.Route{
+			Handler: NewRootController().Handle,
 			Path:    "/",
+			Method:  "GET",
 		})
 
-		err := routerService.Process(context.TODO(), "/")
+		req := http.Request{
+			Method: "GET",
+			URL: &url.URL{
+				Scheme:      "",
+				Opaque:      "",
+				User:        nil,
+				Host:        "",
+				Path:        "/",
+				RawPath:     "",
+				ForceQuery:  false,
+				RawQuery:    "",
+				Fragment:    "",
+				RawFragment: "",
+			},
+		}
+
+		err := routerService.Process(context.TODO(), &req)
 
 		a.NoError(err)
 
@@ -71,12 +91,29 @@ func TestRouterService_Process(t *testing.T) {
 
 		routerService := router.NewRouter()
 
-		routerService.AddRoute(router.Route{
-			Handler: NewRootController(),
+		routerService.AddRoute(entities.Route{
+			Handler: NewRootController().Handle,
 			Path:    "/",
+			Method:  "GET",
 		})
 
-		err := routerService.Process(context.TODO(), "/?test=test")
+		req := http.Request{
+			Method: "GET",
+			URL: &url.URL{
+				Scheme:      "",
+				Opaque:      "",
+				User:        nil,
+				Host:        "",
+				Path:        "/?test=test",
+				RawPath:     "",
+				ForceQuery:  false,
+				RawQuery:    "",
+				Fragment:    "",
+				RawFragment: "",
+			},
+		}
+
+		err := routerService.Process(context.TODO(), &req)
 
 		a.NoError(err)
 
@@ -86,12 +123,29 @@ func TestRouterService_Process(t *testing.T) {
 
 		routerService := router.NewRouter()
 
-		routerService.AddRoute(router.Route{
-			Handler: NewRootController(),
+		routerService.AddRoute(entities.Route{
+			Handler: NewRootController().Handle,
 			Path:    "/test",
+			Method:  "GET",
 		})
 
-		err := routerService.Process(context.TODO(), "/test")
+		req := http.Request{
+			Method: "GET",
+			URL: &url.URL{
+				Scheme:      "",
+				Opaque:      "",
+				User:        nil,
+				Host:        "",
+				Path:        "/test",
+				RawPath:     "",
+				ForceQuery:  false,
+				RawQuery:    "",
+				Fragment:    "",
+				RawFragment: "",
+			},
+		}
+
+		err := routerService.Process(context.TODO(), &req)
 
 		a.NoError(err)
 
@@ -102,12 +156,29 @@ func TestRouterService_Process(t *testing.T) {
 
 		routerService := router.NewRouter()
 
-		routerService.AddRoute(router.Route{
-			Handler: NewRootController(),
+		routerService.AddRoute(entities.Route{
+			Handler: NewRootController().Handle,
 			Path:    "/test/$test",
+			Method:  "GET",
 		})
 
-		err := routerService.Process(context.TODO(), "/test/123")
+		req := http.Request{
+			Method: "GET",
+			URL: &url.URL{
+				Scheme:      "",
+				Opaque:      "",
+				User:        nil,
+				Host:        "",
+				Path:        "/test/123",
+				RawPath:     "",
+				ForceQuery:  false,
+				RawQuery:    "",
+				Fragment:    "",
+				RawFragment: "",
+			},
+		}
+
+		err := routerService.Process(context.TODO(), &req)
 
 		a.NoError(err)
 

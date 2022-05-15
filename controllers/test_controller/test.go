@@ -13,11 +13,11 @@ type TestController struct {
 	controller.Controller
 }
 
-func (c *TestController) TestRoute(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *TestController) TestRoute(ctx context.Context, r entities.HTTPRequest) error {
 	log.Println("Handler:", c.Name)
-	log.Println("Params:", params)
+	log.Println("Params:", r.Params)
 	renderer.GetRender().Render("index.html", map[string]string{
-		"body": params.Get("id"),
+		"body": r.Params.Get("id"),
 	}, http.StatusOK)
 	return nil
 }

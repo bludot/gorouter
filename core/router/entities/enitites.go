@@ -1,6 +1,9 @@
 package entities
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 type QueryParams map[string]string
 
@@ -10,7 +13,17 @@ func (r RouteParams) Get(key string) string {
 	return r[key]
 }
 
-type RouteHandler = func(ctx context.Context, params *RouteParams, queryParams *QueryParams) error
+type HTTPRequest struct {
+	Header     http.Header
+	Method     string
+	URL        string
+	Body       *[]byte
+	RemoteAddr string
+	Query      *QueryParams
+	Params     *RouteParams
+}
+
+type RouteHandler = func(ctx context.Context, request HTTPRequest) error
 
 type Route struct {
 	Handler RouteHandler

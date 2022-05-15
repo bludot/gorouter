@@ -13,16 +13,9 @@ type RootController struct {
 	controller.Controller
 }
 
-func (c *RootController) Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *RootController) Root(ctx context.Context, r entities.HTTPRequest) error {
 	log.Println("Handler:", c.Name)
-	log.Println("Params:", params)
-	renderer.GetRender().ToJSON(map[string]string{"hello": "world"}, http.StatusOK)
-	return nil
-}
-
-func (c *RootController) Root(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
-	log.Println("Handler:", c.Name)
-	log.Println("Params:", params)
+	log.Println("Params:", r.Params)
 	renderer.GetRender().ToJSON(map[string]string{"hello": "world"}, http.StatusOK)
 	return nil
 }

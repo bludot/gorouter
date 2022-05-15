@@ -13,16 +13,16 @@ type TestParamsController struct {
 	controller.Controller
 }
 
-func (c *TestParamsController) TestParams(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *TestParamsController) TestParams(ctx context.Context, r entities.HTTPRequest) error {
 	log.Println("Handler:", c.Name)
-	log.Println("Params:", params)
+	log.Println("Params:", r.Params)
 	renderer.GetRender().Render("index.html", map[string]string{
 		"body": "this is a test (POST)",
 	}, http.StatusOK)
 	return nil
 }
 
-func (c *TestParamsController) GetParams(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error {
+func (c *TestParamsController) GetParams(ctx context.Context, r entities.HTTPRequest) error {
 	renderer.GetRender().Render("index.html", map[string]string{
 		"body": "this is a test (GET)",
 	}, http.StatusOK)

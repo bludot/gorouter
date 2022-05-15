@@ -6,6 +6,7 @@ import (
 	"github.com/bludot/gorouter/core/renderer"
 	"github.com/bludot/gorouter/core/router/entities"
 	"github.com/bludot/gorouter/core/structures/router_trie"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -49,33 +50,40 @@ func (r *RouterService) ParseQueryParams(path string) *entities.QueryParams {
 	return &queryParams
 }
 
-func (r *RouterService) Process(ctx context.Context, req *http.Request, path string) error {
-
+func (r *RouterService) Process(ctx context.Context, req *http.Request) error {
+	path := req.URL.Path
 	routePath := strings.Split(path, "?")
 	var queryParams *entities.QueryParams
 	if len(routePath) > 1 {
 		queryParams = r.ParseQueryParams(routePath[1])
 	}
 	if _, ok := r.Tries[req.Method]; !ok {
-		renderer.GetRender().ToJSON(map[string]interface{}{"error": "Method not allowed"}, http.StatusInternalServerError)
+		renderer.GetRender().ToJSON(map[string]interface{}{"error": "Method not allowed"}, http.StatusMethodNotAllowed)
 		return errors.New("Method not found")
 	}
 	route, params, err := r.Tries[req.Method].GetController(routePath[0])
 	if err != nil {
-		renderer.GetRender().ToJSON(map[string]interface{}{"error": "Method not allowed"}, http.StatusInternalServerError)
+		renderer.GetRender().ToJSON(map[string]interface{}{"error": "Method not allowed"}, http.StatusMethodNotAllowed)
 		log.Println("error is not nil", err)
 		return errors.New("method not allowed")
 	}
 
 	log.Println("error is nil", err)
-	return (*route).Handler(ctx, params, queryParams)
+	b, err := io.ReadAll(req.Body)
+	return (*route).Handler(ctx, entities.HTTPRequest{
+		Body:       &b,
+		Params:     params,
+		Query:      queryParams,
+		Header:     req.Header,
+		URL:        req.URL.String(),
+		Method:     req.Method,
+		RemoteAddr: req.RemoteAddr,
+	})
 
 }
 
 func (r *RouterService) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	path := req.URL.Path
-	log.Println("Request: ", path)
-	err := r.Process(context.Background(), req, path)
+	err := r.Process(context.Background(), req)
 	if err != nil {
 		log.Println("Error: ", err)
 	}

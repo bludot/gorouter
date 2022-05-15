@@ -6,5 +6,5 @@ import (
 )
 
 type IController interface {
-	Handle(ctx context.Context, params *entities.RouteParams, queryParams *entities.QueryParams) error
+	Handle(ctx context.Context, r entities.HTTPRequest) error
 }
